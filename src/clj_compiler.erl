@@ -18,7 +18,6 @@
         ]).
 
 -export([ no_warn_dynamic_var_name/1
-        , no_warn_symbol_as_erl_fun/1
         ]).
 
 -type clj_flag() :: 'no-warn-symbol-as-erl-fun'
@@ -162,10 +161,6 @@ eval1(Form, Opts, Env) ->
   {Value, Env1}.
 
 %% Flags
-
--spec no_warn_symbol_as_erl_fun(clj_env:env()) -> boolean().
-no_warn_symbol_as_erl_fun(Env) ->
-  check_flag('no-warn-symbol-as-erl-fun', Env).
 
 -spec no_warn_dynamic_var_name(clj_env:env()) -> boolean().
 no_warn_dynamic_var_name(Env) ->
