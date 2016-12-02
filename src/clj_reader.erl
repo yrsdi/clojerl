@@ -553,7 +553,7 @@ register_gensym(Symbol) ->
 
 -spec resolve_symbol(any()) -> any().
 resolve_symbol(Symbol) ->
-  case binary:match(clj_core:str(Symbol), <<"\.">>) of
+  case re:run(clj_core:str(Symbol), <<"[.:]">>) of
     nomatch ->
       case clj_namespace:find_var(Symbol) of
         ?NIL ->

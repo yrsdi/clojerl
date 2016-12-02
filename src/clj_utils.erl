@@ -47,6 +47,7 @@
         "([1-9][0-9]?)[rR]([0-9A-Za-z]+)|0[0-9]+)(N)?$").
 -define(FLOAT_PATTERN, "^(([-+]?[0-9]+)(\\.[0-9]*)?([eE][-+]?[0-9]+)?)(M)?$").
 -define(RATIO_PATTERN, "^([-+]?[0-9]+)/([0-9]+)$").
+-define(SYMBOL_PATTERN, ":?([\\D^/].*/)?(/|[\\D^/][^/]*)").
 
 
 -type char_type() :: whitespace | number | string
@@ -91,7 +92,10 @@ parse_symbol(Str) ->
     _ ->
       case binary:split(Str, <<"/">>) of
         [_Namespace, <<>>] ->
-          ?NIL;
+          case binary:split(Str, <<":">>) of
+            [_, <<"/">>] -> {?NIL, Str};
+            _            -> ?NIL
+          end;
         [Namespace, <<"/">>] ->
           {Namespace, <<"/">>};
         [Namespace, Name] ->
@@ -101,14 +105,20 @@ parse_symbol(Str) ->
       end
   end.
 
-verify_symbol_name({_, Name} = Result) ->
-  NotNumeric = fun(<<C/utf8, _/binary>>) -> char_type(C) =/= number end,
-  NoEndColon = fun(X) -> binary:last(X) =/= $: end,
-  NoDoubleSlash = fun(X) -> re:run(X, <<"/.*?/">>) == nomatch end,
-  ApplyPred = fun(Fun) -> Fun(Name) end,
-  case lists:all(ApplyPred, [NotNumeric, NoEndColon, NoDoubleSlash]) of
-    true -> Result;
-    false -> ?NIL
+
+verify_symbol_name({undefined, Name} = Result) ->
+  case re:run(Name, ?SYMBOL_PATTERN) of
+    nomatch -> ?NIL;
+    _       -> Result
+  end;
+verify_symbol_name({Namespace, Name} = Result) ->
+  Pattern = case re:run(Namespace, "[^:].*:.+") of
+              nomatch -> ?SYMBOL_PATTERN;
+              _ -> "\\d+"
+            end,
+  case re:run(Name, Pattern) of
+    nomatch -> ?NIL;
+    _       -> Result
   end.
 
 -spec char_type(non_neg_integer()) -> char_type().

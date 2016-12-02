@@ -130,13 +130,13 @@ itself (not its value) is returned. The reader macro #'x expands to (var x)."}})
 ;; Examine Clojure functions (Vars, really)
 
 (defn- find-file-in-code-path [filename]
-  (->> (code/get_path.e)
-       (map #(filename/join.e (clj_core/to_list.e [% "**" filename])))
-       (map erlang/binary_to_list.1)
-       (mapcat filelib/wildcard.1)
-       (filter filelib/is_regular.1)
+  (->> (code:get_path)
+       (map #(filename:join (clj_core:to_list [% "**" filename])))
+       (map erlang:binary_to_list/1)
+       (mapcat filelib:wildcard/1)
+       (filter filelib:is_regular/1)
        first
-       erlang/list_to_binary.1))
+       erlang:list_to_binary/1))
 
 (defn source-fn
   "Returns a string of the source code for the given symbol, if it can
@@ -150,12 +150,12 @@ itself (not its value) is returned. The reader macro #'x expands to (var x)."}})
   (when-let [v (resolve x)]
     (when-let [filepath (:file (meta v))]
       (when-let [filepath (find-file-in-code-path filepath)]
-        (with-open [rdr (erlang.io.File/open.e filepath)]
+        (with-open [rdr (erlang.io.File:open filepath)]
           (dotimes [_x (dec (:line (meta v)))]
-            (erlang.io.IReader/read_line.e rdr))
+            (erlang.io.IReader:read_line rdr))
           (let [text      (new erlang.io.StringWriter "")
                 pbr       rdr ;; TODO: this was originally a proxy writing to rdr
-                read-opts (if (clojerl.String/ends_with.e filepath "cljc")
+                read-opts (if (clojerl.String:ends_with filepath "cljc")
                             {:read-cond :allow} {})]
             (if (= :unknown *read-eval*)
               (throw "Unable to read source while *read-eval* is :unknown.")
@@ -178,7 +178,7 @@ str-or-pattern."
   [str-or-pattern]
   (let [matches? (if (regex? str-or-pattern)
                    #(re-find str-or-pattern (str %))
-                   #(clojerl.String/contains.e (str %) (str str-or-pattern)))]
+                   #(clojerl.String:contains (str %) (str str-or-pattern)))]
     (sort (mapcat (fn [ns]
                     (let [ns-name (str ns)]
                       (map #(symbol ns-name (str %))
@@ -213,28 +213,28 @@ str-or-pattern."
 
 (defn info [x k default]
   (let [info (nth x 3)]
-    (proplists/get_value.e k info default)))
+    (proplists:get_value k info default)))
 
 (defn filename [x]
-  (erlang/list_to_binary.e (info x :file
-                                 (erlang/binary_to_list.e "NO_SOURCE_FILE"))))
+  (erlang:list_to_binary (info x :file
+                                 (erlang:binary_to_list "NO_SOURCE_FILE"))))
 
 (defn line-number [x]
   (info x :line "?"))
 
 (defn module [x]
-  (erlang/atom_to_binary.e (first x) :utf8))
+  (erlang:atom_to_binary (first x) :utf8))
 
 (defn function [x]
-  (erlang/atom_to_binary.e (second x) :utf8))
+  (erlang:atom_to_binary (second x) :utf8))
 
 (defn stack-element-str
   "Returns a (possibly unmunged) string representation of a StackTraceElement"
   {:added "1.3"}
   [el]
   (let [file (filename el)
-        clojure-fn? (and file (or (clojerl.String/ends_with.e file ".clj")
-                                  (clojerl.String/ends_with.e file ".cljc")
+        clojure-fn? (and file (or (clojerl.String:ends_with file ".clj")
+                                  (clojerl.String:ends_with file ".cljc")
                                   (= file "NO_SOURCE_FILE")))]
     (str (if clojure-fn?
            (demunge (module el))
@@ -255,14 +255,14 @@ str-or-pattern."
      (binding [*out* *err*]
        (println (str e
                      (when-let [info (ex-data e)] (str " " (pr-str info)))))
-       (let [st    (erlang/get_stacktrace.e)
+       (let [st    (erlang:get_stacktrace)
              cause e]
          (doseq [el st]
            (println (str \tab (stack-element-str el))))
          (when cause
            (println "Caused by:")
            (pst cause (min depth
-                           (+ 2 (- (count (erlang/get_stacktrace.e))
+                           (+ 2 (- (count (erlang:get_stacktrace))
                                    (count st))))))))))
 
 ;; ----------------------------------------------------------------------
@@ -271,5 +271,5 @@ str-or-pattern."
 (defn thread-stopper
   "Returns a function that takes one arg and uses that as an exception message
   to stop the given thread.  Defaults to the current thread"
-  ([] (thread-stopper (erlang/self.e)))
-  ([process] (fn [msg] (erlang/exit.e process msg))))
+  ([] (thread-stopper (erlang:self)))
+  ([process] (fn [msg] (erlang:exit process msg))))

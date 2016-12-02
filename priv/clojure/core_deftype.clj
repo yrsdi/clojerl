@@ -123,8 +123,8 @@
                            (or (identical? this# ~gs)
                                (when (identical? (class this#) (class ~gs))
                                  (let [~gs ~(with-meta gs {:tag classname})]
-                                   (and  ~@(map (fn [fld] `(= ~fld (~(symbol (str classname) (str "-" fld ".e")) ~gs))) base-fields)
-                                         (= ~'__extmap (~(symbol (str classname) "-__extmap.e") ~gs))))))))
+                                   (and  ~@(map (fn [fld] `(= ~fld (~(symbol (str classname ":-" fld)) ~gs))) base-fields)
+                                         (= ~'__extmap (~(symbol (str classname ":-__extmap")) ~gs))))))))
                         `(~'contains_key [this# k#] (not (identical? this# (get this# k# this#))))
                         `(~'entry_at [this# k#] (let [v# (get this# k# this#)]
                                                   (when-not (identical? this# v#)
@@ -139,7 +139,7 @@
                                                      ~'__extmap)))
                         `(~'to_list [this#]
                           ;; TODO: Improve this implementation
-                          (clojerl.Seqable/to_list.e (concat [~@(map #(vector (keyword %) %) base-fields)]
+                          (clojerl.Seqable:to_list (concat [~@(map #(vector (keyword %) %) base-fields)]
                                                              ~'__extmap)))
                         `(~'keys [this#] (map first (seq this#)))
                         `(~'vals [this#] (map second (seq this#)))
@@ -293,7 +293,7 @@
        ~(build-positional-factory gname classname fields)
        (defn ~(symbol (str 'map-> gname))
          ~(str "Factory function for class " classname ", taking a map of keywords to field values.")
-         ([m#] (~(symbol (str classname) "create.e")
+         ([m#] (~(symbol (str classname ":create"))
                 (if (map? m#) m# (into {} m#)))))
        '~classname)))
 
@@ -392,14 +392,14 @@
 
 (defn- protocol?
   [maybe-p]
-  (and (clj_module/is_clojure.e maybe-p)
-       (clj_module/is_protocol.e maybe-p)))
+  (and (clj_module:is_clojure maybe-p)
+       (clj_module:is_protocol maybe-p)))
 
 (defn extends?
   "Returns true if atype extends protocol"
   {:added "1.2"}
   [protocol atype]
-  (clj_core/satisfies?.e protocol atype))
+  (clj_core:satisfies? protocol atype))
 
 #_(defn extenders
   "Returns a collection of the types explicitly extending protocol"
@@ -423,7 +423,7 @@
   `(defn ~(with-meta name (assoc sig :protocol (list 'quote iname)))
      ~@(map (fn [args]
               `(~args
-                (clj_protocol/resolve.e ~(keyword iname)
+                (clj_protocol:resolve ~(keyword iname)
                                         ~(keyword name)
                                         ~@args)))
             arglists)))
@@ -462,7 +462,7 @@
     `(do
        ~(when sigs
           `(#'assert-same-protocol '~iname
-                                   '~(clj_core/to_list.e (map :name (vals sigs)))))
+                                   '~(clj_core:to_list (map :name (vals sigs)))))
        ~@(map (partial emit-protocol-function iname) (vals sigs))
        (~'defprotocol* ~iname ~@meths)
        (import* ~(str iname))

@@ -38,9 +38,9 @@
 (def ^:dynamic *verbose-defrecords* false)
 
 (defn- write
-  "Wrap io/fwrite.e"
+  "Wrap erlang.io.IWriter:write"
   [w str]
-  (erlang.io.IWriter/write.e w str))
+  (erlang.io.IWriter:write w str))
 
 (defn- print-sequential [begin, print-one, sep, end, sequence, w]
   (binding [*print-level* (and (not *print-dup*) *print-level* (dec *print-level*))]
@@ -153,7 +153,7 @@
   (if (or *print-dup* *print-readably*)
     (do (write w \")
       (dotimes [n (count s)]
-        (let [c (clojerl.String/char_at.e s n)
+        (let [c (clojerl.String:char_at s n)
               e (char-escape-string c)]
           (if e (write w e) (write w c))))
       (write w \"))

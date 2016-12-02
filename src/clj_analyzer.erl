@@ -1742,32 +1742,30 @@ resolve(Env, Symbol, CheckPrivate) ->
           {{type, MappedVal}, Env}
       end;
     NsStr =/= ?NIL ->
-      %% If there is no var then assume it's a Module:Function pair.
-      %% Let's see how this works out.
-      {erl_fun(Env, Symbol), Env};
+      erl_fun(Env, Symbol);
     true ->
       case is_maybe_type(Symbol) of
         true  -> {{type, Symbol}, Env};
-        false -> {?NIL, Env}
+        false -> erl_fun(Env, Symbol)
       end
   end.
 
--spec erl_fun(clj_env:env(), 'clojerl.Symbol':type()) -> erl_fun().
+-spec erl_fun(clj_env:env(), 'clojerl.Symbol':type()) ->
+  {erl_fun(), clj_env:env()}.
 erl_fun(Env, Symbol) ->
-  NsSym         = clj_core:symbol(clj_core:namespace(Symbol)),
-  NsName        = clj_core:name(NsSym),
-  case NsName of
-    <<"erl">> ->
-      {Name, Arity} = erl_fun_arity(clj_core:name(Symbol)),
-      {Module, Function} = erl_fun_mf(Name, Env),
+  {Name, Arity} = case clj_core:namespace(Symbol) of
+                    ?NIL -> {clj_core:name(Symbol), ?NIL};
+                    NsName ->
+                      { NsName
+                      , binary_to_integer(clj_core:name(Symbol))
+                      }
+                  end,
 
-      Arity1 = case Arity of
-                 _ when is_integer(Arity) -> Arity;
-                 _ -> ?NIL
-               end,
-
-      {erl_fun, Module, Function, Arity1};
-    _ -> ?NIL
+  case erl_fun_mf(Name, Env) of
+    {Module, Function} ->
+      {{erl_fun, Module, Function, Arity}, Env};
+    _ ->
+      {?NIL, Env}
   end.
 
 -spec erl_fun_mf(clj_env:env(), binary()) -> {binary(), ?NIL | integer()}.
@@ -1776,28 +1774,12 @@ erl_fun_mf(Name, Env) ->
     [Module, Function] ->
       {binary_to_atom(Module, utf8), binary_to_atom(Function, utf8)};
     [_] ->
-      clj_utils:error( <<"Invalid format for Erlang function. "
-                         "It should be: module:function[/arity]">>
+      clj_utils:error( [ <<"Invalid format for Erlang function: ">>
+                       , Name
+                       , <<". It should be 'module:function[/arity]'">>
+                       ]
                      , clj_env:location(Env)
                      )
-  end.
-
--spec erl_fun_arity(binary()) -> {binary(), ?NIL | integer()}.
-erl_fun_arity(Name) ->
-  case binary:split(Name, <<"/">>, [global]) of
-    [_] -> {Name, ?NIL};
-    Parts ->
-      Last = lists:last(Parts),
-      case {re:run(Last, <<"\\d+">>), Last} of
-        {nomatch, <<"e">>} when length(Parts) > 1 ->
-          {iolist_to_binary(lists:droplast(Parts)), <<"e">>};
-        {nomatch, _} ->
-          {Name, ?NIL};
-        _ ->
-          NameParts = 'clojerl.String':join(lists:droplast(Parts), <<".">>),
-          Arity = binary_to_integer(Last),
-          {iolist_to_binary(NameParts), Arity}
-      end
   end.
 
 -spec is_maybe_type('clojerl.Symbol':type()) -> boolean().
