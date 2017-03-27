@@ -1001,7 +1001,7 @@ erl_fun(_Config) ->
    , module   := erlang
    , function := 'is_atom'
    , arity    := ?NIL
-   } = analyze_one(<<"erlang/is_atom.e">>),
+   } = analyze_one(<<"erlang/is_atom">>),
 
   {comments, ""}.
 

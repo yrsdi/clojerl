@@ -824,7 +824,7 @@ eval(ReadFun) ->
   1 = ReadFun(<<"#=(do 1)">>),
 
   ct:comment("Read eval (str 1)"),
-  <<"1">> = ReadFun(<<"#=(clj_core/str.e 1)">>),
+  <<"1">> = ReadFun(<<"#=(clj_core/str 1)">>),
 
   {comments, ""}.
 

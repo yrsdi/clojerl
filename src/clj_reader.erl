@@ -1182,6 +1182,7 @@ erlang_literal(Form, State) ->
   IsMap    = clj_core:'map?'(Form),
   IsVector = clj_core:'vector?'(Form),
   IsString = clj_core:'string?'(Form),
+  IsSymbol = clj_core:'symbol?'(Form),
 
   Value    =
     if
@@ -1195,6 +1196,25 @@ erlang_literal(Form, State) ->
                                  , unicode:characters_to_list(Form)
                                  ]
                                );
+      IsSymbol ->
+        {NsStr, NameStr, Arity} = clj_utils:parse_erl_fun(Form),
+        ErlFunSym = clj_core:symbol(<<"erl-fun*">>),
+        Args = case {NsStr, Arity} of
+                 {?NIL, ?NIL} ->
+                   [binary_to_atom(NameStr, utf8)];
+                 {?NIL, _} ->
+                   [binary_to_atom(NameStr, utf8), Arity];
+                 {_, ?NIL} ->
+                   [ binary_to_atom(NsStr, utf8)
+                   , binary_to_atom(NameStr, utf8)
+                   ];
+                 {_, _} ->
+                   [ binary_to_atom(NsStr, utf8)
+                   , binary_to_atom(NameStr, utf8)
+                   , Arity
+                   ]
+               end,
+        clj_core:list([ErlFunSym | Args]);
       true     -> clj_utils:error(<<"Can only have list, map, tuple "
                                     "or Erlang string literals">>
                                  , location(State)
