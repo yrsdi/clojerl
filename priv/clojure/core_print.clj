@@ -40,7 +40,7 @@
 (defn- write
   "Wrap io/fwrite.e"
   [w str]
-  (erlang.io.IWriter/write.e w str))
+  (#erl erlang.io.IWriter/write w str))
 
 (defn- print-sequential [begin, print-one, sep, end, sequence, w]
   (binding [*print-level* (and (not *print-dup*) *print-level* (dec *print-level*))]
@@ -153,14 +153,14 @@
 
 (defmethod print-method clojerl.String [^clojerl.String s, ^Writer w]
   (if (or *print-dup* *print-readably*)
-    (let [printable? (clojerl.String/is_printable.e s)]
+    (let [printable? (#erl clojerl.String/is_printable s)]
       (write w (if printable? \" "#bin["))
       (if printable?
         (dotimes [n (.count s)]
-          (let [c (clojerl.String/char_at.e s n)
+          (let [c (#erl clojerl.String/char_at s n)
                 e (char-escape-string c)]
             (if e (write w e) (write w c))))
-        (->> (erlang/binary_to_list.e s)
+        (->> (#erl erlang/binary_to_list s)
              (interpose " ")
              (apply str)
              (write w)))

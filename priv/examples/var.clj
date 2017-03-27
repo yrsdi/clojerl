@@ -4,7 +4,7 @@
 
 (def prn
   (fn* [x]
-    (io/format.e "~s~n" (clj_core/seq.e [(clj_core/str.e x)]))))
+    (io/format "~s~n" (clj_core/seq [(clj_core/str x)]))))
 
 (prn (var x))
 
@@ -18,9 +18,9 @@
 (prn *y*)
 
 ;; Return dynamic binding
-(clojerl.Var/push_bindings.e {#'*y* :bound-y})
+(clojerl.Var/push_bindings {#'*y* :bound-y})
 (prn *y*)
-(clojerl.Var/pop_bindings.e)
+(clojerl.Var/pop_bindings)
 
 ;; Define unbound
 (def z)

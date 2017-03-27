@@ -1,7 +1,7 @@
 (ns examples.macro)
 
-(def cons (fn* [x s] (clj_core/cons.e x s)))
-(def seq (fn* [s] (clj_core/seq.e s)))
+(def cons (fn* [x s] (clj_core/cons x s)))
+(def seq (fn* [s] (clj_core/seq s)))
 
 (def ^:macro defn
   (fn* [form env name args & body]
@@ -10,7 +10,7 @@
                    [(cons 'fn* (cons args body))]))))
 
 (defn hello [name]
-  (io/format.e "Going to say hi...")
-  (io/format.e "Hello ~s!~n" (seq [name])))
+  (io/format "Going to say hi...")
+  (io/format "Hello ~s!~n" (seq [name])))
 
 (hello "Moto")

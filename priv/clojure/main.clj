@@ -22,20 +22,20 @@
 
 (defn info [x k default]
   (let [info (nth x 3)]
-    (proplists/get_value.e k info default)))
+    (proplists/get_value k info default)))
 
 (defn filename [x]
-  (erlang/list_to_binary.e (info x :file
-                                 (erlang/binary_to_list.e "NO_SOURCE_FILE"))))
+  (erlang/list_to_binary (info x :file
+                                 (erlang/binary_to_list "NO_SOURCE_FILE"))))
 
 (defn line-number [x]
   (info x :line "?"))
 
 (defn module [x]
-  (erlang/atom_to_binary.e (first x) :utf8))
+  (erlang/atom_to_binary (first x) :utf8))
 
 (defn function [x]
-  (erlang/atom_to_binary.e (second x) :utf8))
+  (erlang/atom_to_binary (second x) :utf8))
 
 (defn arg-count [x]
   (let [maybe-arg-count (nth x 2)]
@@ -47,8 +47,8 @@
   {:added "1.3"}
   [el]
   (let [file (filename el)
-        clojure-fn? (and file (or (clojerl.String/ends_with.e file ".clj")
-                                  (clojerl.String/ends_with.e file ".cljc")
+        clojure-fn? (and file (or (clojerl.String/ends_with file ".clj")
+                                  (clojerl.String/ends_with file ".cljc")
                                   (= file "NO_SOURCE_FILE")))]
     (str (if clojure-fn? (demunge (module el)) (module el))
          "/" (function el)
@@ -95,11 +95,11 @@
   its behavior of both supporting .unread and collapsing all of CR, LF, and
   CRLF to a single \\newline."
   [s]
-  (let [c (erlang.io.IReader/read.e s)]
+  (let [c (erlang.io.IReader/read s)]
     (cond
      (= c \newline) :line-start
      (= c :eof) :stream-end
-     :else (do (erlang.io.IReader/unread.e s c) :body))))
+     :else (do (erlang.io.IReader/unread s c) :body))))
 
 (defn whitespace? [x]
   (or (= " " x) (= x "\n") (= x "\r") (= x "\t")))
@@ -114,13 +114,13 @@
   supporting .unread and collapsing all of CR, LF, and CRLF to a single
   \\newline."
   [s]
-  (loop [c (erlang.io.IReader/read.e s)]
+  (loop [c (erlang.io.IReader/read s)]
     (cond
      (= c \newline) :line-start
      (= c :eof) :stream-end
-     (= c \;) (do (erlang.io.IReader/read_line.e s) :line-start)
-     (or (whitespace? c) (= c \,)) (recur (erlang.io.IReader/read.e s))
-     :else (do (erlang.io.IReader/unread.e s c) :body))))
+     (= c \;) (do (erlang.io.IReader/read_line s) :line-start)
+     (or (whitespace? c) (= c \,)) (recur (erlang.io.IReader/read s))
+     :else (do (erlang.io.IReader/unread s c) :body))))
 
 (defn repl-read
   "Default :read hook for repl. Reads from *in* which must either be an
@@ -142,12 +142,12 @@
 (defn repl-exception
   "Returns the root cause of throwables"
   []
-  (root-cause (erlang/get_stacktrace.e)))
+  (root-cause (erlang/get_stacktrace)))
 
 (defn repl-caught
   "Default :caught hook for repl"
   [ex]
-  (let [tr (erlang/get_stacktrace.e)]
+  (let [tr (erlang/get_stacktrace)]
     (binding [*out* *err*]
       (println "Error:" ex)
       (doall (map #(-> % stack-element-str println) tr)))))
@@ -212,7 +212,7 @@ by default when a new command-line REPL is started."} repl-requires
   (let [{:keys [init need-prompt prompt flush read eval print caught]
          :or {init        #()
               need-prompt #(if (instance? :erlang.io.PushbackReader *in*)
-                             (erlang.io.PushbackReader/at_line_start.e *in*)
+                             (erlang.io.PushbackReader/at_line_start *in*)
                              true)
               prompt      repl-prompt
               flush       flush
@@ -221,8 +221,8 @@ by default when a new command-line REPL is started."} repl-requires
               print       prn
               caught      repl-caught}}
         (apply hash-map options)
-        request-prompt (erlang/make_ref.e)
-        request-exit (erlang/make_ref.e)
+        request-prompt (erlang/make_ref)
+        request-exit (erlang/make_ref)
         read-eval-print
         (fn []
           (try
@@ -261,7 +261,7 @@ by default when a new command-line REPL is started."} repl-requires
   "Loads Clojure source from a file or resource given its path. Paths
   beginning with @ or @/ are considered relative to classpath."
   [^clojerl.String path]
-  (clj_compiler/compile_file.e path))
+  (clj_compiler/compile_file path))
 
 (defn- init-opt
   "Load a script"
@@ -271,7 +271,7 @@ by default when a new command-line REPL is started."} repl-requires
 (defn- eval-opt
   "Evals expressions in str, prints each non-nil result using prn"
   [str]
-  (let [eof (erlang/make_ref.e)
+  (let [eof (erlang/make_ref)
         reader (new erlang.io.StringReader str)]
       (loop [input (with-read-known (read reader false eof))]
         (when-not (= input eof)
@@ -314,7 +314,7 @@ by default when a new command-line REPL is started."} repl-requires
                 (initialize args inits)
                 (apply require repl-requires)))
   (prn)
-  (erlang/halt.e 0))
+  (erlang/halt 0))
 
 (defn- script-opt
   "Run a script from a file, resource, or standard in with args and inits"

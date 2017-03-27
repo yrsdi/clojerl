@@ -75,7 +75,7 @@
       #{1 2}
       (into-tuple [1 2])
 
-      (erlang/self.e) ))
+      (erlang/self) ))
 
 
 (deftest test-nil-punning
@@ -197,7 +197,7 @@
       (into-tuple [1 2])
 
       ; Process IDs
-      (erlang/self.e) ))
+      (erlang/self) ))
 
 (deftest test-some?
   (are [expected x] (= expected (some? x))

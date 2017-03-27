@@ -19,7 +19,7 @@
     :doc "Returns a new seq where x is the first element and seq is
     the rest."
     :added "1.0"}
-  cons (fn* [x s] (clj_core/cons.e x s)))
+  cons (fn* [x s] (#erl clj_core/cons x s)))
 
 (def
   ^{:macro true
@@ -36,14 +36,14 @@
     :added "1.0"}
   fn (fn* fn [&form _&env & decl]
          (let [x (cons 'fn* (new clojerl.List decl))]
-           (clj_core/with_meta.e x (clj_core/meta.e &form)))))
+           (#erl clj_core/with_meta x (#erl clj_core/meta &form)))))
 
 (def
   ^{:arglists '([coll])
     :doc "Returns the first item in the collection. Calls seq on its
     argument. If coll is nil, returns nil."
     :added "1.0"}
-  first (fn first [coll] (clj_core/first.e coll)))
+  first (fn first [coll] (#erl clj_core/first coll)))
 
 (def
   ^{:arglists '([coll])
@@ -51,7 +51,7 @@
     :doc "Returns a seq of the items after the first. Calls seq on its
   argument.  If there are no more items, returns nil."
     :added "1.0"}
-  next (fn next [x] (clj_core/next.e x)))
+  next (fn next [x] (#erl clj_core/next x)))
 
 (def
   ^{:arglists '([coll])
@@ -59,7 +59,7 @@
     :doc "Returns a possibly empty seq of the items after the first. Calls seq on its
   argument."
     :added "1.0"}
-  rest (fn rest [x] (clj_core/rest.e x)))
+  rest (fn rest [x] (#erl clj_core/rest x)))
 
 (def
   ^{:arglists '([coll x] [coll x & xs])
@@ -70,7 +70,7 @@
   conj (fn conj
          ([] [])
          ([coll] coll)
-         ([coll x] (clj_core/conj.e coll x))
+         ([coll x] (#erl clj_core/conj coll x))
          ([coll x & xs]
           (if xs
             (recur (conj coll x) (first xs) (next xs))
@@ -116,20 +116,20 @@
     returns the same mutable object."
     :tag clojerl.ISeq
     :added "1.0"}
-  seq (fn seq [coll] (clj_core/seq.e coll)))
+  seq (fn seq [coll] (#erl clj_core/seq coll)))
 
 (def
   ^{:arglists '([protocol x])
     :doc "Returns true if x satisfies the protocol"
     :added "1.2"}
   satisfies? (fn satisfies? [protocol x]
-               (clj_core/satisfies?.e protocol (clj_core/type.e x))))
+               (#erl clj_core/satisfies? protocol (#erl clj_core/type x))))
 
 (def
   ^{:arglists '([atype x])
     :doc "Returns true if x's type is atype"
     :added "1.0"}
-  instance? (fn instance? [atype x] (erlang/==.e atype (clj_core/type.e x))))
+  instance? (fn instance? [atype x] (#erl erlang/== atype (#erl clj_core/type x))))
 
 (def
   ^{:arglists '([x])
@@ -153,15 +153,15 @@
   ^{:arglists '([x])
     :doc "Return true if x is a String"
     :added "1.0"}
-  string? (fn string? [x] (erlang/is_binary.e x)))
+  string? (fn string? [x] (#erl erlang/is_binary x)))
 
 (def
   ^{:arglists '([x])
     :doc "Return true if x is a Character"
     :added "1.0"}
   char? (fn char? [x]
-          (erlang/and.e (erlang/is_binary.e x)
-                        (erlang/=:=.e 1 (erlang/size.e x)))))
+          (#erl erlang/and (#erl erlang/is_binary x)
+                        (#erl erlang/=:= 1 (#erl erlang/size x)))))
 
 (def
   ^{:arglists '([x])
@@ -185,7 +185,7 @@
   ^{:arglists '([x])
     :doc "Returns true if x is an Erlang tuple"
     :added "1.0"}
-  tuple? (fn [x] (erlang/is_tuple.e x)))
+  tuple? (fn [x] (#erl erlang/is_tuple x)))
 
 (def
   ^{:arglists '([map key val] [map key val & kvs])
@@ -196,7 +196,7 @@
     :added "1.0"}
   assoc
   (fn assoc
-    ([map key val] (clj_core/assoc.e map key val))
+    ([map key val] (#erl clj_core/assoc map key val))
     ([map key val & kvs]
      (let [ret (assoc map key val)]
        (if kvs
@@ -212,7 +212,7 @@
     :added "1.0"}
   meta (fn meta [x]
          (if (meta? x)
-           (clj_core/meta.e x))))
+           (#erl clj_core/meta x))))
 
 (def
   ^{:arglists '([^clojure.lang.IObj obj m])
@@ -220,7 +220,7 @@
     map m as its metadata."
     :added "1.0"}
   with-meta (fn with-meta [x m]
-              (clj_core/with_meta.e x m)))
+              (#erl clj_core/with_meta x m)))
 
 (def ^{:private true :dynamic true}
   assert-valid-fdecl (fn [fdecl]))
@@ -234,8 +234,8 @@
           (fn [fdecl]
             (let [arglist (first fdecl)
                   ;elide implicit macro args
-                  arglist (if (clj_core/equiv.e '&form (first arglist))
-                            (clj_core/subvec.e arglist 2 (clj_core/count.e arglist))
+                  arglist (if (#erl clj_core/equiv '&form (first arglist))
+                            (#erl clj_core/subvec arglist 2 (#erl clj_core/count arglist))
                             arglist)
                   body (next fdecl)]
               (if (map? (first body))
@@ -320,7 +320,7 @@
   ([a b c] [a b c])
   ([a b c d] [a b c d])
   ([a b c d & args]
-   (clj_core/vector.e (cons a (cons b (cons c (cons d args)))))))
+   (#erl clj_core/vector (cons a (cons b (cons c (cons d args)))))))
 
 (defn vec
   "Creates a new vector containing the contents of coll. Java arrays
@@ -330,8 +330,8 @@
    (if (vector? coll)
      (if (satisfies? clojerl.IMeta coll)
        (with-meta coll nil)
-       (clj_core/vector.e coll))
-     (clj_core/vector.e coll))))
+       (#erl clj_core/vector coll))
+     (#erl clj_core/vector coll))))
 
 (defn hash-map
   "keyval => key val
@@ -390,7 +390,7 @@
   "Returns true if x is nil, false otherwise."
   {:tag clojerl.Boolean
    :added "1.0"}
-  [x] (erlang/=:=.e x nil))
+  [x] (#erl erlang/=:= x nil))
 
 (def
   ^{:macro true
@@ -453,13 +453,13 @@
   "Returns true if x is the value false, false otherwise."
   {:tag clojerl.Boolean
    :added "1.0"}
-  [x] (erlang/=:=.e x false))
+  [x] (#erl erlang/=:= x false))
 
 (defn true?
   "Returns true if x is the value true, false otherwise."
   {:tag clojerl.Boolean
    :added "1.0"}
-  [x] (erlang/=:=.e x true))
+  [x] (#erl erlang/=:= x true))
 
 (defn not
   "Returns true if x is logical false, false otherwise."
@@ -481,14 +481,14 @@
    :added "1.0"}
   (^clojerl.String [] "")
   (^clojerl.String [^Object x]
-                    (if (nil? x) "" (clj_core/str.e x)))
+                    (if (nil? x) "" (#erl clj_core/str x)))
   (^clojerl.String [x & ys]
                     ((fn [acc more]
                        (if more
-                         (recur (clojerl.String/append.e acc (str (first more)))
+                         (recur (#erl clojerl.String/append acc (str (first more)))
                                 (next more))
                          acc))
-                     (clj_core/str.e x) ys)))
+                     (#erl clj_core/str x) ys)))
 
 (defn keyword?
   "Return true if x is a Keyword"
@@ -499,8 +499,8 @@
   "Returns a Symbol with the given namespace and name."
   {:tag clojerl.Symbol
    :added "1.0"}
-  ([name] (if (symbol? name) name (clj_core/symbol.e name)))
-  ([ns name] (clj_core/symbol.e ns name)))
+  ([name] (if (symbol? name) name (#erl clj_core/symbol name)))
+  ([ns name] (#erl clj_core/symbol ns name)))
 
 (defn gensym
   "Returns a new symbol with a unique name. If a prefix string is
@@ -508,7 +508,7 @@
   prefix is not supplied, the prefix is 'G__'."
   {:added "1.0"}
   ([] (gensym "G__"))
-  ([prefix-string] (clj_core/gensym.e prefix-string)))
+  ([prefix-string] (#erl clj_core/gensym prefix-string)))
 
 (defmacro cond
   "Takes a set of test/expr pairs. It evaluates each test one at a
@@ -530,8 +530,8 @@
   {:tag clojerl.Keyword
    :added "1.0"}
   ([name] (cond (keyword? name) name
-                (symbol? name) (new clojerl.Keyword (clj_core/namespace.e name)
-                                                      (clj_core/name.e name))
+                (symbol? name) (new clojerl.Keyword (#erl clj_core/namespace name)
+                                                      (#erl clj_core/name name))
                 (string? name) (new clojerl.Keyword name)))
   ([ns name] (new clojerl.Keyword ns name)))
 
@@ -543,10 +543,10 @@
   {:tag clojerl.Keyword
    :added "1.3"}
   ([name] (cond (keyword? name) name
-                (symbol? name) (clojerl.Keyword/find.e (clj_core/namespace.e name)
-                                                       (clj_core/name.e name))
-                (string? name) (clojerl.Keyword/find.e name)))
-  ([ns name] (clojerl.Keyword/find.e ns name)))
+                (symbol? name) (#erl clojerl.Keyword/find (#erl clj_core/namespace name)
+                                                       (#erl clj_core/name name))
+                (string? name) (#erl clojerl.Keyword/find name)))
+  ([ns name] (#erl clojerl.Keyword/find ns name)))
 
 (defn spread
   {:private true}
@@ -571,15 +571,15 @@
   "Applies fn f to the argument list formed by prepending intervening arguments to args."
   {:added "1.0"}
   ([f args]
-   (clojerl.IFn/apply.e f (seq args)))
+   (#erl clojerl.IFn/apply f (seq args)))
   ([f x args]
-   (clojerl.IFn/apply.e f (list* x args)))
+   (#erl clojerl.IFn/apply f (list* x args)))
   ([f x y args]
-   (clojerl.IFn/apply.e f (list* x y args)))
+   (#erl clojerl.IFn/apply f (list* x y args)))
   ([f x y z args]
-   (clojerl.IFn/apply.e f (list* x y z args)))
+   (#erl clojerl.IFn/apply f (list* x y z args)))
   ([f a b c d & args]
-   (clojerl.IFn/apply.e f (cons a (cons b (cons c (cons d (spread args))))))))
+   (#erl clojerl.IFn/apply f (cons a (cons b (cons c (cons d (spread args))))))))
 
 (defn vary-meta
   "Returns an object of the same type and value as obj, with
@@ -676,7 +676,7 @@
   {:added "1.0"}
   [x]
   (throw "unimplemented delay")
-  #_(clojerl.Delay/force.e x))
+  #_(clojerl.Delay/force x))
 
 (defmacro if-not
   "Evaluates test. If logical false, evaluates and returns then expr,
@@ -689,23 +689,23 @@
 (defn identical?
   "Tests if 2 arguments are the same object"
   {:added "1.0"}
-  ([x y] (erlang/=:=.e x y)))
+  ([x y] (#erl erlang/=:= x y)))
 
 ;equiv-based
 (defn =
   "Equality. Returns true if x equals y, false if not. Same as
-  Java x.equals(y) except it also works for nil, and compares
+  Java xquals(y) except it also works for nil, and compares
   numbers and collections in a type-independent manner.  Clojure's immutable data
   structures define equals() (and thus =) as a value, not an identity,
   comparison."
   {:added "1.0"}
   ([x] true)
-  ([x y] (clj_core/equiv.e x y))
+  ([x y] (#erl clj_core/equiv x y))
   ([x y & more]
-   (if (clj_core/equiv.e x y)
+   (if (#erl clj_core/equiv x y)
      (if (next more)
        (recur y (first more) (next more))
-       (clj_core/equiv.e y (first more)))
+       (#erl clj_core/equiv y (first more)))
      false)))
 
 (defn not=
@@ -725,7 +725,7 @@
   must implement Comparable"
   {:added "1.0"}
   [x y]
-  (clj_utils/compare.e x y))
+  (#erl clj_utils/compare x y))
 
 (defmacro and
   "Evaluates exprs one at a time, from left to right. If a form
@@ -755,18 +755,18 @@
 (defn zero?
   "Returns true if num is zero, else false"
   {:added "1.0"}
-  [x] (erlang/==.e x 0))
+  [x] (#erl erlang/== x 0))
 
 (defn count
   "Returns the number of items in the collection. (count nil) returns
   0.  Also works on strings, arrays, and Java Collections and Maps"
   {:added "1.0"}
-  [coll] (clj_core/count.e coll))
+  [coll] (#erl clj_core/count coll))
 
 (defn int
   "Coerce to int"
   {:added "1.0"}
-  [x] (erlang/trunc.e x))
+  [x] (#erl erlang/trunc x))
 
 (defn nth
   "Returns the value at the index. get returns nil if index out of
@@ -774,15 +774,15 @@
   also works for strings, Java arrays, regex Matchers and Lists, and,
   in O(n) time, for sequences."
   {:added "1.0"}
-  ([coll index] (clj_core/nth.e coll index))
-  ([coll index not-found] (clj_core/nth.e coll index not-found)))
+  ([coll index] (#erl clj_core/nth coll index))
+  ([coll index not-found] (#erl clj_core/nth coll index not-found)))
 
 (defn <
   "Returns non-nil if nums are in monotonically increasing order,
   otherwise false."
   {:added "1.0"}
   ([x] true)
-  ([x y] (erlang/<.e x y))
+  ([x y] (#erl erlang/< x y))
   ([x y & more]
    (if (< x y)
      (if (next more)
@@ -794,7 +794,7 @@
   "Returns a number one greater than num. Supports arbitrary precision.
   See also: inc"
   {:added "1.0"}
-  [x] (erlang/+.e x 1))
+  [x] (#erl erlang/+ x 1))
 
 (defn inc
   "Returns a number one greater than num. Does not auto-promote
@@ -828,7 +828,7 @@
   {:added "1.0"}
   ([] 0)
   ([x] x)
-  ([x y] (erlang/+.e x y))
+  ([x y] (#erl erlang/+ x y))
   ([x y & more]
    (reduce1 +' (+' x y) more)))
 
@@ -838,9 +838,9 @@
   {:added "1.2"}
   ([] 0)
   ([x] x)
-  ([x y] (erlang/+.e x y))
+  ([x y] (#erl erlang/+ x y))
   ([x y & more]
-   (reduce1 erlang/+.2 (+ x y) more)))
+   (reduce1 #erl erlang/+.2 (+ x y) more)))
 
 (defn *'
   "Returns the product of nums. (*) returns 1. Supports arbitrary precision.
@@ -848,7 +848,7 @@
   {:added "1.0"}
   ([] 1)
   ([x] x)
-  ([x y] (erlang/*.e x y))
+  ([x y] (#erl erlang/* x y))
   ([x y & more]
    (reduce1 *' (*' x y) more)))
 
@@ -867,7 +867,7 @@
   else returns numerator divided by all of the denominators."
   {:added "1.0"}
   ([x] (/ 1 x))
-  ([x y] (erlang//.e x y))
+  ([x y] (#erl erlang// x y))
   ([x y & more]
    (reduce1 / (/ x y) more)))
 
@@ -876,8 +876,8 @@
   the ys from x and returns the result. Supports arbitrary precision.
   See also: -"
   {:added "1.0"}
-  ([x] (erlang/-.e x))
-  ([x y] (erlang/-.e x y))
+  ([x] (#erl erlang/- x))
+  ([x y] (#erl erlang/- x y))
   ([x y & more]
    (reduce1 -' (-' x y) more)))
 
@@ -896,7 +896,7 @@
   otherwise false."
   {:added "1.0"}
   ([x] true)
-  ([x y] (erlang/=<.e x y))
+  ([x y] (#erl erlang/=< x y))
   ([x y & more]
    (if (<= x y)
      (if (next more)
@@ -909,7 +909,7 @@
   otherwise false."
   {:added "1.0"}
   ([x] true)
-  ([x y] (erlang/>.e x y))
+  ([x y] (#erl erlang/> x y))
   ([x y & more]
    (if (> x y)
      (if (next more)
@@ -922,7 +922,7 @@
   otherwise false."
   {:added "1.0"}
   ([x] true)
-  ([x y] (erlang/>=.e x y))
+  ([x y] (#erl erlang/>= x y))
   ([x y & more]
    (if (>= x y)
      (if (next more)
@@ -935,7 +935,7 @@
   value (type-independent), otherwise false"
   {:added "1.0"}
   ([x] true)
-  ([x y] (erlang/==.e x y))
+  ([x y] (#erl erlang/== x y))
   ([x y & more]
    (if (== x y)
      (if (next more)
@@ -963,13 +963,13 @@
   "Returns a number one less than num. Supports arbitrary precision.
   See also: dec"
   {:added "1.0"}
-  [x] (erlang/-.e x 1))
+  [x] (#erl erlang/- x 1))
 
 (defn dec
   "Returns a number one less than num. Does not auto-promote
   longs, will throw on overflow. See also: dec'"
   {:added "1.2"}
-  [x] (erlang/-.e x 1))
+  [x] (#erl erlang/- x 1))
 
 (defn pos?
   "Returns true if num is greater than zero, else false"
@@ -985,40 +985,40 @@
   "quot[ient] of dividing numerator by denominator."
   {:added "1.0"}
   [num div]
-  (erlang/trunc.e (/ num div)))
+  (#erl erlang/trunc (/ num div)))
 
 (defn rem
   "remainder of dividing numerator by denominator."
   {:added "1.0"}
   [num div]
-  (erlang/rem.e num div))
+  (#erl erlang/rem num div))
 
 ;;Bit ops
 
 (defn bit-not
   "Bitwise complement"
   {:added "1.0"}
-  [x] (erlang/bnot.e x))
+  [x] (#erl erlang/bnot x))
 
 
 (defn bit-and
   "Bitwise and"
    {:added "1.0"}
-   ([x y] (erlang/band.e x y))
+   ([x y] (#erl erlang/band x y))
    ([x y & more]
       (reduce1 bit-and (bit-and x y) more)))
 
 (defn bit-or
   "Bitwise or"
   {:added "1.0"}
-  ([x y] (erlang/bor.e x y))
+  ([x y] (#erl erlang/bor x y))
   ([x y & more]
     (reduce1 bit-or (bit-or x y) more)))
 
 (defn bit-xor
   "Bitwise exclusive or"
   {:added "1.0"}
-  ([x y] (erlang/bxor.e x y))
+  ([x y] (#erl erlang/bxor x y))
   ([x y & more]
     (reduce1 bit-xor (bit-xor x y) more)))
 
@@ -1034,36 +1034,36 @@
   "Clear bit at index n"
   {:added "1.0"}
   [x n]
-  (erlang/band.e x (erlang/bnot.e (erlang/bsl.e 1 n))))
+  (#erl erlang/band x (#erl erlang/bnot (#erl erlang/bsl 1 n))))
 
 (defn bit-set
   "Set bit at index n"
   {:added "1.0"}
   [x n]
-  (erlang/bor.e x (erlang/bsl.e 1 n)))
+  (#erl erlang/bor x (#erl erlang/bsl 1 n)))
 
 (defn bit-flip
   "Flip bit at index n"
   {:added "1.0"}
   [x n]
-  (erlang/bxor.e x (erlang/bsl.e 1 n)))
+  (#erl erlang/bxor x (#erl erlang/bsl 1 n)))
 
 (defn bit-test
   "Test bit at index n"
   {:added "1.0"}
   [x n]
-  (erlang/==.e 0 (erlang/band.e x (erlang/bsl.e 1 n))))
+  (#erl erlang/== 0 (#erl erlang/band x (#erl erlang/bsl 1 n))))
 
 
 (defn bit-shift-left
   "Bitwise shift left"
   {:added "1.0"}
-  [x n] (erlang/bsl.e x n))
+  [x n] (#erl erlang/bsl x n))
 
 (defn bit-shift-right
   "Bitwise shift right"
   {:added "1.0"}
-  [x n] (erlang/bsr.e x n))
+  [x n] (#erl erlang/bsr x n))
 
 (defn unsigned-bit-shift-right
   "Bitwise shift right, without sign-extension."
@@ -1075,7 +1075,7 @@
   "Returns true if n is an integer"
   {:added "1.0"}
   [n]
-  (erlang/is_integer.e n))
+  (#erl erlang/is_integer n))
 
 (defn even?
   "Returns true if n is even, throws an exception if n is not an integer"
@@ -1120,7 +1120,7 @@
   "For a list or queue, same as first, for a vector, same as, but much
   more efficient than, last. If the collection is empty, returns nil."
   {:added "1.0"}
-  [coll] (clj_core/peek.e coll))
+  [coll] (#erl clj_core/peek coll))
 
 (defn pop
   "For a list or queue, returns a new list/queue without the first
@@ -1128,7 +1128,7 @@
   the collection is empty, throws an exception.  Note - not the same
   as next/butlast."
   {:added "1.0"}
-  [coll] (clj_core/pop.e coll))
+  [coll] (#erl clj_core/pop coll))
 
 ;;map stuff
 
@@ -1145,15 +1145,15 @@
   range of indexes. 'contains?' operates constant or logarithmic time;
   it will not perform a linear search for a value.  See also 'some'."
   {:added "1.0"}
-  [coll key] (clj_core/contains?.e coll key))
+  [coll key] (#erl clj_core/contains? coll key))
 
 (defn get
   "Returns the value mapped to key, not-found or nil if key not present."
   {:added "1.0"}
   ([map key]
-   (clj_core/get.e map key))
+   (#erl clj_core/get map key))
   ([map key not-found]
-   (clj_core/get.e map key not-found)))
+   (#erl clj_core/get map key not-found)))
 
 (defn dissoc
   "dissoc[iate]. Returns a new map of the same (hashed/sorted) type,
@@ -1161,7 +1161,7 @@
   {:added "1.0"}
   ([map] map)
   ([map key]
-   (clj_core/dissoc.e map key))
+   (#erl clj_core/dissoc map key))
   ([map key & ks]
    (let [ret (dissoc map key)]
      (if ks
@@ -1175,7 +1175,7 @@
   ([set] set)
   ([^clojure.lang.IPersistentSet set key]
    (when set
-     (clj_core/disj.e set key)))
+     (#erl clj_core/disj set key)))
   ([set key & ks]
    (when set
      (let [ret (disj set key)]
@@ -1186,7 +1186,7 @@
 (defn find
   "Returns the map entry for key, or nil if key not present."
   {:added "1.0"}
-  [map key] (clj_core/find.e map key))
+  [map key] (#erl clj_core/find map key))
 
 (defn select-keys
   "Returns a map containing only those entries in map whose key is in keys"
@@ -1194,7 +1194,7 @@
   [map keyseq]
     (loop [ret {} keys (seq keyseq)]
       (if keys
-        (let [entry (clj_core/find.e map (first keys))]
+        (let [entry (#erl clj_core/find map (first keys))]
           (recur
            (if entry
              (conj ret entry)
@@ -1205,12 +1205,12 @@
 (defn keys
   "Returns a sequence of the map's keys, in the same order as (seq map)."
   {:added "1.0"}
-  [map] (clj_core/keys.e map))
+  [map] (#erl clj_core/keys map))
 
 (defn vals
   "Returns a sequence of the map's values, in the same order as (seq map)."
   {:added "1.0"}
-  [map] (clj_core/vals.e map))
+  [map] (#erl clj_core/vals map))
 
 (defn key
   "Returns the key of the map entry."
@@ -1229,21 +1229,21 @@
   can be a vector or sorted-map), in reverse order. If rev is empty returns nil"
   {:added "1.0"}
   [rev]
-    (clj_core/rseq.e rev))
+    (#erl clj_core/rseq rev))
 
 (defn name
   "Returns the name String of a string, symbol or keyword."
   {:tag clojerl.String
    :added "1.0"}
   [x]
-  (if (string? x) x (clj_core/name.e x)))
+  (if (string? x) x (#erl clj_core/name x)))
 
 (defn namespace
   "Returns the namespace String of a symbol or keyword, or nil if not present."
   {:tag clojerl.String
    :added "1.0"}
   [^clojure.lang.Named x]
-  (clj_core/namespace.e x))
+  (#erl clj_core/namespace x))
 
 (defmacro ..
   "form => fieldName-symbol or (instanceMethodName-symbol args*)
@@ -1358,12 +1358,12 @@
           hierarchy (get options :hierarchy #'global-hierarchy)]
       (check-valid-options options :default :hierarchy)
       `(let [v# (def ~mm-name)]
-         (when-not (and (clojerl.Var/has_root.e v#)
+         (when-not (and (#erl clojerl.Var/has_root v#)
                         (instance? clojerl.MultiFn (deref v#)))
            (defn ~(with-meta mm-name m)
              [& args#]
              (let [val# (apply ~dispatch-fn args#)
-                   f#    (clojerl.MultiFn/get_method.e ~(name mm-name) val# ~default ~hierarchy)]
+                   f#    (#erl clojerl.MultiFn/get_method ~(name mm-name) val# ~default ~hierarchy)]
                (when (nil? f#)
                  (throw (str "No multimethod defined for dispatch value " val#
                              " in " '~mm-name
@@ -1378,7 +1378,7 @@
     `(do
        (defn- ~fn-name ~@fn-tail)
        (erl-on-load*
-        (clojerl.MultiFn/add_method.e ~(name multifn)
+        (#erl clojerl.MultiFn/add_method ~(name multifn)
                                       ~dispatch-val
                                       (var ~fn-name))))))
 
@@ -1386,13 +1386,13 @@
   "Removes all of the methods of multimethod."
   {:added "1.2"}
   [^Var multifn]
-  (clojerl.MultiFn/remove_all.e (name multifn)))
+  (#erl clojerl.MultiFn/remove_all (name multifn)))
 
 (defn remove-method
   "Removes the method of multimethod associated with dispatch-value."
   {:added "1.0"}
   [^clojure.lang.MultiFn multifn dispatch-val]
-  (clojerl.MultiFn/remove_method.e multifn dispatch-val))
+  (#erl clojerl.MultiFn/remove_method multifn dispatch-val))
 
 (defn prefer-method
   "Causes the multimethod to prefer matches of dispatch-val-x over dispatch-val-y
@@ -1405,14 +1405,14 @@
   "Given a multimethod, returns a map of dispatch values -> dispatch fns"
   {:added "1.0"}
   [^clojure.lang.MultiFn multifn]
-  (clojerl.MultiFn/get_method_table.e multifn))
+  (#erl clojerl.MultiFn/get_method_table multifn))
 
 (defn get-method
   "Given a multimethod and a dispatch value, returns the dispatch fn
   that would apply to that value, or nil if none apply and no default"
   {:added "1.0"}
   [^clojure.lang.MultiFn multifn dispatch-val]
-  (clojerl.MultiFn/get_method.e multifn dispatch-val))
+  (#erl clojerl.MultiFn/get_method multifn dispatch-val))
 
 (defn prefers
   "Given a multimethod, returns a map of preferred value -> set of other values"
@@ -1433,7 +1433,7 @@
 (defmacro set!
   [x val]
   (assert-args (symbol? x) "a symbol as its first argument")
-  `(clj_core/set!.e (var ~x) ~val))
+  `(#erl clj_core/set! (var ~x) ~val))
 
 (defmacro if-let
   "bindings => binding-form test
@@ -1518,21 +1518,21 @@
           (pop-thread-bindings)))"
   {:added "1.1"}
   [bindings]
-  (clojerl.Var/push_bindings.e bindings))
+  (#erl clojerl.Var/push_bindings bindings))
 
 (defn pop-thread-bindings
   "Pop one set of bindings pushed with push-binding before. It is an error to
   pop bindings without pushing before."
   {:added "1.1"}
   []
-  (clojerl.Var/pop_bindings.e))
+  (#erl clojerl.Var/pop_bindings))
 
 (defn get-thread-bindings
   "Get a map with the Var/value pairs which is currently in effect for the
   current thread."
   {:added "1.1"}
   []
-  (clojerl.Var/get_bindings_map.e))
+  (#erl clojerl.Var/get_bindings_map))
 
 (defmacro binding
   "binding => var-symbol init-expr
@@ -1604,28 +1604,28 @@
   "Returns the global var named by the namespace-qualified symbol, or
   nil if no var with that name."
   {:added "1.0"}
-  [sym] (clj_namespace/find_var.e sym))
+  [sym] (#erl clj_namespace/find_var sym))
 
 (defn binding-conveyor-fn
   {:private true
    :added "1.3"}
   [f]
-  (let [frame (clojerl.Var/get_bindings.e)]
+  (let [frame (#erl clojerl.Var/get_bindings)]
     (fn
       ([]
-         (clojerl.Var/reset_bindings.e frame)
+         (#erl clojerl.Var/reset_bindings frame)
          (f))
       ([x]
-         (clojerl.Var/reset_bindings.e frame)
+         (#erl clojerl.Var/reset_bindings frame)
          (f x))
       ([x y]
-         (clojerl.Var/reset_bindings.e frame)
+         (#erl clojerl.Var/reset_bindings frame)
          (f x y))
       ([x y z]
-         (clojerl.Var/reset_bindings.e frame)
+         (#erl clojerl.Var/reset_bindings frame)
          (f x y z))
       ([x y z & args]
-         (clojerl.Var/reset_bindings.e frame)
+         (#erl clojerl.Var/reset_bindings frame)
          (apply f x y z args)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Refs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1918,8 +1918,8 @@
   {:added "1.0"}
   ([ref]
    (if (satisfies? clojerl.IDeref ref)
-     (clj_core/deref.e ref)
-     (throw (str "unimplemented deref for type " (clj_core/type.e ref)))
+     (#erl clj_core/deref ref)
+     (throw (str "unimplemented deref for type " (#erl clj_core/type ref)))
      #_(deref-future ref)))
   ([ref timeout-ms timeout-val]
    (throw "unimplemented timeout for deref")
@@ -2432,7 +2432,7 @@
   "Returns true if x is the result of a call to reduced"
   {:added "1.5"}
   [x]
-  (clojerl.Reduced/is_reduced.e x))
+  (#erl clojerl.Reduced/is_reduced x))
 
 (defn ensure-reduced
   "If x is already reduced?, returns it, else returns (reduced x)"
@@ -2653,7 +2653,7 @@
   rdr must implement java.io.BufferedReader."
   {:added "1.0"}
   [rdr]
-  (let [line (erlang.io.IReader/read_line.e rdr)]
+  (let [line (#erl erlang.io.IReader/read_line rdr)]
     (when (string? line)
       (cons line (lazy-seq (line-seq rdr))))))
 
@@ -2675,7 +2675,7 @@
    (sort compare coll))
   ([comp coll]
    (if (seq coll)
-     (lists/sort.e (clj_core/to_list.e coll))
+     (#erl lists/sort (#erl clj_core/to_list coll))
      ())))
 
 (defn sort-by
@@ -2767,7 +2767,7 @@
   "Evaluates the form data structure (not text!) and returns the result."
   {:added "1.0"}
   [form]
-  (first (clj_compiler/eval.e form)))
+  (first (#erl clj_compiler/eval form)))
 
 (defmacro doseq
   "Repeatedly executes body (presumably for side-effects) with
@@ -2814,7 +2814,7 @@
                         `(loop [~seq- (seq ~v), ~chunk- nil,
                                 ~count- 0, ~i- 0]
                            (if (< ~i- ~count-)
-                             (let [~k (clj_core/nth.e ~chunk- ~i-)]
+                             (let [~k (#erl clj_core/nth ~chunk- ~i-)]
                                ~subform-chunk
                                ~@(when needrec [recform-chunk]))
                              (when-let [~seq- (seq ~seq-)]
@@ -3004,9 +3004,9 @@
   "Returns a tuple with components set to the values in aseq."
   {:added "1.0"}
   ([aseq]
-   (-> (seq aseq) clj_core/to_list.1 erlang/list_to_tuple.1))
+   (-> (seq aseq) (#erl clj_core/to_list) (#erl erlang/list_to_tuple)))
   ([type aseq]
-   (-> (seq aseq) clj_core/to_list.1 erlang/list_to_tuple.1)))
+   (-> (seq aseq) (#erl clj_core/to_list) (#erl erlang/list_to_tuple))))
 
 (defn tuple
   "Returns a tuple with items."
@@ -3018,7 +3018,7 @@
   "Returns the Class of x"
   {:added "1.0"}
   ^clojerl.Keyword [^Object x]
-  (if (nil? x) x (clj_core/type.e x)))
+  (if (nil? x) x (#erl clj_core/type x)))
 
 (defn type
   "Returns the :type metadata of x, or its Class if none"
@@ -3031,7 +3031,7 @@
   {:tag clojerl.Integer
    :added "1.0"}
   [x]
-  (if (erlang/is_number.e x)
+  (if (#erl erlang/is_number x)
     x
     (throw "Not a number")))
 
@@ -3039,48 +3039,48 @@
   "Coerce to long"
   {:added "1.0"}
   [x]
-  (erlang/trunc.e x))
+  (#erl erlang/trunc x))
 
 (defn float
   "Coerce to float"
   {:added "1.0"}
   [x]
-  (erlang/float.e x))
+  (#erl erlang/float x))
 
 (defn double
   "Coerce to double"
   {:added "1.0"}
   [^Number x]
-  (erlang/float.e x))
+  (#erl erlang/float x))
 
 (defn short
   "Coerce to short"
   {:added "1.0"}
   [^Number x]
-  (clj_core/short.e x))
+  (#erl clj_core/short x))
 
 (defn byte
   "Coerce to byte"
   {:added "1.0"}
   [^Number x]
-  (clj_core/byte.e x))
+  (#erl clj_core/byte x))
 
 (defn char
   "Coerce to char"
   {:added "1.1"}
   [x]
-  (clj_core/char.e x))
+  (#erl clj_core/char x))
 
 (defn boolean
   "Coerce to boolean"
   {:added "1.0"}
-  [x] (clj_core/boolean.e x))
+  [x] (#erl clj_core/boolean x))
 
 (defn number?
   "Returns true if x is a Number"
   {:added "1.0"}
   [x]
-  (erlang/is_number.e x))
+  (#erl erlang/is_number x))
 
 (defn mod
   "Modulus of num and div. Truncates toward negative infinity."
@@ -3095,7 +3095,7 @@
   "Returns true if n is a floating point number"
   {:added "1.0"}
   [n]
-  (erlang/is_float.e n))
+  (#erl erlang/is_float n))
 
 (def ^:dynamic ^{:private true} print-initialized false)
 
@@ -3125,27 +3125,27 @@
    (pr-on x *out*))
   ([x & more]
    (pr x)
-   (io/put_chars.e *out* " ")
+   (#erl io/put_chars *out* " ")
    (if-let [nmore (next more)]
      (recur (first more) nmore)
      (apply pr more))))
 
 (def ^:private ^clojerl.String system-newline
-  (let [os-family (first (os/type.e))]
+  (let [os-family (first (#erl os/type))]
     (if (= os-family :win32) "\r\n" "\n")))
 
 (defn newline
   "Writes a platform-specific newline to *out*"
   {:added "1.0"}
   []
-  (io/nl.e *out*) nil)
+  (#erl io/nl *out*) nil)
 
 (defn flush
   "Flushes the output stream that is the current value of
   *out*"
   {:added "1.0"}
   []
-  (io/put_chars.e *out* "") nil)
+  (#erl io/put_chars *out* "") nil)
 
 (defn prn
   "Same as pr followed by (newline). Observes *flush-on-newline*"
@@ -3196,14 +3196,14 @@
    (read {:eof (if eof-error? :eofthrow eof-value)}
          stream))
   ([opts stream]
-   (clj_reader/read.e ""
-                      (clojerl.Map/to_erl_map.e (assoc opts :io-reader stream)))))
+   (#erl clj_reader/read ""
+                      (#erl clojerl.Map/to_erl_map (assoc opts :io-reader stream)))))
 
 (defn read-line
   "Reads the next line from stream that is the current value of *in* ."
   {:added "1.0"}
   []
-  (erlang.io.IReader/read_line.e *in*))
+  (#erl erlang.io.IReader/read_line *in*))
 
 (defn read-string
   "Reads one object from the string s. Optionally include reader
@@ -3214,8 +3214,8 @@
 
   For data structure interop use clojure.edn/read-string"
   {:added "1.0"}
-  ([s] (clj_reader/read.e s))
-  ([opts s] (clj_reader/read.e s (clojerl.Map/to_erl_map.e opts))))
+  ([s] (#erl clj_reader/read s))
+  ([opts s] (#erl clj_reader/read s (#erl clojerl.Map/to_erl_map opts))))
 
 (defn subvec
   "Returns a persistent vector of the items in vector from
@@ -3227,7 +3227,7 @@
   ([v start]
    (subvec v start (count v)))
   ([v start end]
-   (clj_core/subvec.e v start end)))
+   (#erl clj_core/subvec v start end)))
 
 (defmacro with-open
   "bindings => [name init ...]
@@ -3246,7 +3246,7 @@
                               (try
                                 (with-open ~(subvec bindings 2) ~@body)
                                 (finally
-                                  (erlang.io.Closeable/close.e ~(bindings 0)))))
+                                  (#erl erlang.io.Closeable/close ~(bindings 0)))))
     :else (throw "with-open only allows Symbols in bindings")))
 
 (defmacro doto
@@ -3284,9 +3284,9 @@
  expr."
   {:added "1.0"}
   [expr]
-  `(let [start# (erlang/monotonic_time.e :nano_seconds)
+  `(let [start# (#erl erlang/monotonic_time :nano_seconds)
          ret#   ~expr
-         stop#  (erlang/monotonic_time.e :nano_seconds)]
+         stop#  (#erl erlang/monotonic_time :nano_seconds)]
      (prn (str "Elapsed time: "
                (/ (- stop# start#) 1000000.0)
                " msecs"))
@@ -3297,7 +3297,7 @@
   else returns form."
   {:added "1.0"}
   [form]
-  (clj_analyzer/macroexpand_1.e form nil))
+  (#erl clj_analyzer/macroexpand_1 form nil))
 
 (defn macroexpand
   "Repeatedly calls macroexpand-1 on form until it no longer
@@ -3323,7 +3323,7 @@
   string"
   {:added "1.0"}
   [s]
-  (clj_compiler/compile.e str))
+  (#erl clj_compiler/compile str))
 
 (defn set?
   "Returns true if x implements IPersistentSet"
@@ -3336,7 +3336,7 @@
   [coll]
   (if (set? coll)
     (with-meta coll nil)
-    (clj_core/hash_set.e (clj_core/to_list.e coll))))
+    (#erl clj_core/hash_set (#erl clj_core/to_list coll))))
 
 (defn ^{:private true}
   filter-key [keyfn pred amap]
@@ -3350,7 +3350,7 @@
 (defn find-ns
   "Returns the namespace named by the symbol or nil if it doesn't exist."
   {:added "1.0"}
-  [sym] (clj_namespace/find.e sym))
+  [sym] (#erl clj_namespace/find sym))
 
 (defn create-ns
   "Create a new namespace named by the symbol if one doesn't already
@@ -3358,19 +3358,19 @@
   name."
   {:added "1.0"}
   [sym]
-  (clj_namespace/find_or_create.e sym))
+  (#erl clj_namespace/find_or_create sym))
 
 (defn remove-ns
   "Removes the namespace named by the symbol. Use with caution.
   Cannot be used to remove the clojure namespace."
   {:added "1.0"}
   [sym]
-  (clj_namespace/remove.e sym))
+  (#erl clj_namespace/remove sym))
 
 (defn all-ns
   "Returns a sequence of all namespaces."
   {:added "1.0"}
-  [] (clj_namespace/all.e))
+  [] (#erl clj_namespace/all))
 
 (defn the-ns
   "If passed a namespace, returns it. Else, when passed a symbol,
@@ -3386,19 +3386,19 @@
   "Returns the name of the namespace, a symbol."
   {:added "1.0"}
   [ns]
-  (clj_namespace/name.e (the-ns ns)))
+  (#erl clj_namespace/name (the-ns ns)))
 
 (defn ns-map
   "Returns a map of all the mappings for the namespace."
   {:added "1.0"}
   [ns]
-  (clj_namespace/get_mappings.e (the-ns ns)))
+  (#erl clj_namespace/get_mappings (the-ns ns)))
 
 (defn ns-unmap
   "Removes the mappings for the symbol from the namespace."
   {:added "1.0"}
   [ns sym]
-  (clj_namespace/unmap.e sym (the-ns ns)))
+  (#erl clj_namespace/unmap sym (the-ns ns)))
 
 ;(defn export [syms]
 ;  (doseq [sym syms]
@@ -3411,7 +3411,7 @@
   (let [ns (the-ns ns)]
     (filter-key val (fn [v] (and (instance? clojerl.Var v)
                                 (identical? ns (find-ns (symbol (namespace v))))
-                                (clojerl.Var/is_public.e v)))
+                                (#erl clojerl.Var/is_public v)))
                 (ns-map ns))))
 
 (defn ns-imports
@@ -3468,7 +3468,7 @@
             (throw (if (get (ns-interns ns) name)
                      (str name " is not public")
                      (str name " does not exist"))))
-          (clj_namespace/refer.e (or (rename sym) sym) v *ns*))))))
+          (#erl clj_namespace/refer (or (rename sym) sym) v *ns*))))))
 
 (defn ns-refers
   "Returns a map of the refer mappings for the namespace."
@@ -3486,19 +3486,19 @@
   to calling this directly."
   {:added "1.0"}
   [alias namespace-sym]
-  (clj_namespace/add_alias.e alias (the-ns namespace-sym) *ns*))
+  (#erl clj_namespace/add_alias alias (the-ns namespace-sym) *ns*))
 
 (defn ns-aliases
   "Returns a map of the aliases for the namespace."
   {:added "1.0"}
   [ns]
-  (clj_namespace/get_aliases.e (the-ns ns)))
+  (#erl clj_namespace/get_aliases (the-ns ns)))
 
 (defn ns-unalias
   "Removes the alias for the symbol from the namespace."
   {:added "1.0"}
   [ns sym]
-  (clj_namespace/remove_alias.e sym (the-ns ns)))
+  (#erl clj_namespace/remove_alias sym (the-ns ns)))
 
 (defn take-nth
   "Returns a lazy seq of every nth item in coll.  Returns a stateful
@@ -3540,13 +3540,13 @@
 (defn var-get
   "Gets the value in the var object"
   {:added "1.0"}
-  [x] (clojerl.Var/get.e x))
+  [x] (#erl clojerl.Var/get x))
 
 (defn var-set
   "Sets the value in the var object to val. The var must be
   thread-locally bound."
   {:added "1.0"}
-  [x val] (clojerl.Var/dynamic_binding.e x val))
+  [x val] (#erl clojerl.Var/dynamic_binding x val))
 
 (defmacro with-local-vars
   "varbinding=> symbol init-expr
@@ -3562,10 +3562,10 @@
    (even? (count name-vals-vec)) "an even number of forms in binding vector")
   `(let [~@(interleave (take-nth 2 name-vals-vec)
                        (repeat '(.. clojure.lang.Var create setDynamic)))]
-     (clojerl.Var/push_bindings.e (hash-map ~@name-vals-vec))
+     (#erl clojerl.Var/push_bindings (hash-map ~@name-vals-vec))
      (try
        ~@body
-       (finally (clojerl.Var/pop_bindings.e)))))
+       (finally (#erl clojerl.Var/pop_bindings)))))
 
 (defn ns-resolve
   "Returns the var or Class to which a symbol will be resolved in the
@@ -3577,7 +3577,7 @@
    (ns-resolve ns nil sym))
   ([ns env sym]
    (when-not (contains? env sym)
-     (clj_namespace/find_var.e sym (the-ns ns)))))
+     (#erl clj_namespace/find_var sym (the-ns ns)))))
 
 (defn resolve
   "same as (ns-resolve *ns* symbol) or (ns-resolve *ns* &env symbol)"
@@ -3637,7 +3637,7 @@
                            defaults (:or b)]
                        (loop [ret (-> bvec (conj gmap) (conj v)
                                       (conj gmap) (conj `(if (seq? ~gmap)
-                                                           (new clojerl.Map (clj_core/to_list.e ~gmapseq))
+                                                           (new clojerl.Map (#erl clj_core/to_list ~gmapseq))
                                                            ~gmap))
                                       ((fn [ret]
                                          (if (:as b)
@@ -3892,7 +3892,7 @@
                                            ~gb (chunk-buffer size#)]
                                        (if (loop [~gi (int 0)]
                                              (if (< ~gi size#)
-                                               (let [~bind (clj_core/nth.e c# ~gi)]
+                                               (let [~bind (#erl clj_core/nth c# ~gi)]
                                                  ~(do-cmod mod-pairs))
                                                true))
                                          (chunk-cons
@@ -4009,7 +4009,7 @@
   "Returns a random floating point number between 0 (inclusive) and
   n (default 1) (exclusive)."
   {:added "1.0"}
-  ([] (rand/uniform.e))
+  ([] (#erl rand/uniform))
   ([n] (* n (rand))))
 
 (defn rand-int
@@ -4044,10 +4044,10 @@
   {:added "1.0"}
   [dir]
   (tree-seq
-   (fn [^erlang.io.File f] (filelib/is_dir.e f))
-   (fn [^erlang.io.File d] (->> (file/list_dir.e d)
+   (fn [^erlang.io.File f] (#erl filelib/is_dir f))
+   (fn [^erlang.io.File d] (->> (#erl file/list_dir d)
                              second
-                             (map #(filename/join.e d %))
+                             (map #(#erl filename/join d %))
                              seq))
    dir))
 
@@ -4064,7 +4064,7 @@
   "Returns true if s names a special form"
   {:added "1.0"}
   [s]
-    (clj_analyzer/is_special.e s))
+    (#erl clj_analyzer/is_special s))
 
 (defn var?
   "Returns true if v is of type clojure.lang.Var"
@@ -4076,18 +4076,18 @@
   at end (defaults to length of string), exclusive."
   {:added "1.0"}
   ([s start] (subs s start (count s)))
-  ([s start end] (clojerl.String/substring.e s start end)))
+  ([s start end] (#erl clojerl.String/substring s start end)))
 
 (defn regex? [x]
-  (clj_core/regex?.e x))
+  (#erl clj_core/regex? x))
 
 (defn re-run
   "Runs the matching of the pattern over the string using the provided
   options."
   {:added "1.0"}
   [re s & opts]
-  (let [opts (clj_core/to_list.e opts)
-        res  (erlang.util.Regex/run.e re s opts)]
+  (let [opts (#erl clj_core/to_list opts)
+        res  (#erl erlang.util.Regex/run re s opts)]
     (when (and (tuple? res) (= (first res) :match))
       (vec (second res)))))
 
@@ -4264,7 +4264,7 @@
    :deprecated "1.1"}
   [url]
   (println "WARNING: add-classpath is deprecated")
-  (code/add_patha.e (erlang/binary_to_list.e url)))
+  (#erl code/add_patha (#erl erlang/binary_to_list url)))
 
 (defn hash
   "Returns the hash code of its argument. Note this is the hash code
@@ -4273,7 +4273,7 @@
 
   {:added "1.0"}
   [x]
-  (clojerl.IHash/hash.e x))
+  (#erl clojerl.IHash/hash x))
 
 (defn mix-collection-hash
   "Mix final collection hash for ordered or unordered collections.
@@ -4294,7 +4294,7 @@
   {:added "1.6"}
   ^long
   [coll]
-  (clj_murmur3/ordered.e coll))
+  (#erl clj_murmur3/ordered coll))
 
 (defn hash-unordered-coll
   "Returns the hash code, consistent with =, for an external unordered
@@ -4305,7 +4305,7 @@
   {:added "1.6"}
   ^long
   [coll]
-  (clj_murmur3/unordered.e coll))
+  (#erl clj_murmur3/unordered coll))
 
 (defn interpose
   "Returns a lazy seq of the elements of coll separated by sep.
@@ -4334,7 +4334,7 @@
   {:added "1.0"}
   [coll]
   (when (satisfies? clojerl.IColl coll)
-    (clj_core/empty.e coll)))
+    (#erl clj_core/empty coll)))
 
 (defn seque
   "Creates a queued seq on another (presumably lazy) seq s. The queued
@@ -4400,14 +4400,14 @@
    Implies that deref'ing the provided vars will succeed. Returns true if no vars are provided."
   {:added "1.2"}
   [& vars]
-  (every? clojerl.Var/is_bound.1 vars))
+  (every? #erl clojerl.Var/is_bound.1 vars))
 
 (defn thread-bound?
   "Returns true if all of the vars provided as arguments have thread-local bindings.
    Implies that set!'ing the provided vars will succeed.  Returns true if no vars are provided."
   {:added "1.2"}
   [& vars]
-  (every? clojerl.Var/dynamic_binding.1 vars))
+  (every? #erl clojerl.Var/dynamic_binding.1 vars))
 
 (defn make-hierarchy
   "Creates a hierarchy object for use with derive, isa? etc."
@@ -4597,9 +4597,9 @@
   string syntax"
   {:added "1.0"}
   ^clojerl.String [fmt & args]
-  (->> (clj_core/to_list.e args)
-       (io_lib/format.e fmt)
-       erlang/list_to_binary.e))
+  (->> (#erl clj_core/to_list args)
+       (#erl io_lib/format fmt)
+       (#erl erlang/list_to_binary)))
 
 (defn printf
   "Prints formatted output, as per format"
@@ -4631,7 +4631,7 @@
   [name]
   (let [name (maybe-unquote name)]
     (if (symbol? name)
-      (clj_namespace/find_or_create.e name)
+      (#erl clj_namespace/find_or_create name)
       (throw (str "First argument to in-ns must be a symbol, got: " (type name))))))
 
 (defmacro ns
@@ -4680,7 +4680,7 @@
         gen-class-call
           (when gen-class-clause
             (list* `gen-class
-                   :name (binary/replace.e (str name) "-" "_")
+                   :name (#erl binary/replace (str name) "-" "_")
                    :impl-ns name
                    :main true (next gen-class-clause)))
         references (remove #(= :gen-class (first %)) references)
@@ -4710,7 +4710,7 @@
   {:added "1.0"}
   [name expr]
   `(let [v# (def ~name)]
-     (when-not (clojerl.Var/has_root.e v#)
+     (when-not (#erl clojerl.Var/has_root v#)
        (def ~name ~expr))))
 
 ;;;;;;;;;;; require/use/load, contributed by Stephen C. Gilardi ;;;;;;;;;;;;;;;;;;
@@ -4737,12 +4737,12 @@
   [pred fmt & args]
   (when pred
     (let [message   (apply format fmt (map str args))
-          raw-trace (try (throw :ex) (catch :throw ex (erlang/get_stacktrace.e)))
+          raw-trace (try (throw :ex) (catch :throw ex (#erl erlang/get_stacktrace)))
           ;;boring?   #(not= (.getMethodName %) "doInvoke")
           ;;trace (into-array (drop 2 (drop-while boring? raw-trace)))
           ]
       ;;(.setStackTrace exception trace)
-      (erlang/raise.e :error message raw-trace))))
+      (#erl erlang/raise :error message raw-trace))))
 
 (defn- libspec?
   "Returns true if x is a libspec"
@@ -4766,17 +4766,17 @@
   [lib]
   (str "/"
        (-> (name lib)
-           (binary/replace.e "." "/" #erl(:global))
-           (binary/replace.e "-" "_" #erl(:global)))))
+           (#erl binary/replace "." "/" #erl(:global))
+           (#erl binary/replace "-" "_" #erl(:global)))))
 
 (defn- index-of [s x]
-  (let [matches (binary/matches.e s x)]
+  (let [matches (#erl binary/matches s x)]
     (if (seq matches)
       (ffirst matches)
       -1)))
 
 (defn- last-index-of [s x]
-  (let [matches (binary/matches.e s x)]
+  (let [matches (#erl binary/matches s x)]
     (if (seq matches)
       (first (last matches))
       -1)))
@@ -4799,7 +4799,7 @@
             "namespace '~s' not found after loading '~s'"
             lib (root-resource lib))
   (when require
-    (clj_core/set!.e #'*loaded-libs* (conj *loaded-libs* lib))))
+    (#erl clj_core/set! #'*loaded-libs* (conj *loaded-libs* lib))))
 
 (defn- load-all
   "Loads a lib given its name and forces a load of any libs it directly or
@@ -4807,7 +4807,7 @@
   exists after loading. If require, records the load so any duplicate loads
   can be skipped."
   [lib need-ns require]
-  (clj_core/set!.e #'*loaded-libs*
+  (#erl clj_core/set! #'*loaded-libs*
                    (reduce1 conj
                             *loaded-libs*
                             ;; TODO: should be a sorted-set
@@ -4988,7 +4988,7 @@
    :added "1.0"}
   [& paths]
   (doseq [path paths]
-    (let [path (if (clojerl.String/starts_with.e path "/")
+    (let [path (if (#erl clojerl.String/starts_with path "/")
                  path
                  (str (root-directory (ns-name *ns*)) "/" path))]
       (when *loading-verbosely*
@@ -4997,7 +4997,7 @@
       (check-cyclic-dependency path)
       (when-not (= path (first *pending-paths*))
         (binding [*pending-paths* (conj *pending-paths* path)]
-          (clj_core/load.e (subs path 1)))))))
+          (#erl clj_core/load (subs path 1)))))))
 
 (defn compile
   "Compiles the namespace named by the symbol lib into a set of
@@ -5014,7 +5014,7 @@
 (defn load-file
   {:added "1.0"}
   [path]
-  (clj_compiler/load_file.e path))
+  (#erl clj_compiler/load_file path))
 
 ;;;;;;;;;;;;; nested associative ops ;;;;;;;;;;;
 
@@ -5026,7 +5026,7 @@
   ([m ks]
      (reduce1 get m ks))
   ([m ks not-found]
-     (loop [sentinel (erlang/make_ref.e)
+     (loop [sentinel (#erl erlang/make_ref)
             m m
             ks (seq ks)]
        (if ks
@@ -5102,7 +5102,7 @@
 (defn fn?
   "Returns true if x implements Fn, i.e. is an object created via fn."
   {:added "1.0"}
-  [x] (erlang/is_function.e x))
+  [x] (#erl erlang/is_function x))
 
 
 (defn associative?
@@ -5518,11 +5518,11 @@
   {:added "1.0"}
   ([f coll]
    (if (satisfies? clojerl.IReduce coll)
-     (clojerl.IReduce/reduce.e coll f)
+     (#erl clojerl.IReduce/reduce coll f)
      (seq-reduce f coll)))
   ([f val coll]
    (if (satisfies? clojerl.IReduce coll)
-     (clojerl.IReduce/reduce.e coll f val)
+     (#erl clojerl.IReduce/reduce coll f val)
      (seq-reduce f val coll))))
 
 (extend-protocol IKVReduce
@@ -5573,7 +5573,7 @@
   ([xform f init coll]
      (let [f (xform f)
            ret (if (instance? clojerl.IReduce coll)
-                 (clojerl.IReduce/reduce.e coll f init)
+                 (#erl clojerl.IReduce/reduce coll f init)
                  (seq-reduce coll f init))]
        (f ret))))
 
@@ -5638,7 +5638,7 @@
   {:added "1.2"}
   [f content & options]
   (with-open [^erlang.io.IWriter w (apply io/writer f options)]
-    (erlang.io.IWriter/write.e w (str content))))
+    (#erl erlang.io.IWriter/write w (str content))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; futures (needs proxy);;;;;;;;;;;;;;;;;;
 (defn future-call
@@ -5700,7 +5700,7 @@
   the coordination overhead."
   {:added "1.0"}
   ([f coll]
-   (let [n (+ 2 (erlang/system_info.e :logical_processors_available))
+   (let [n (+ 2 (#erl erlang/system_info :logical_processors_available))
          rets (map #(future (f %)) coll)
          step (fn step [[x & xs :as vs] fs]
                 (lazy-seq
@@ -5732,18 +5732,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clojure version number ;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:dynamic *clojure-version*
-  (let [properties (second (application/get_all_key.e :clojerl))
-        vsn        (proplists/get_value.e :vsn properties)
-        version-string (erlang/list_to_binary.e vsn)
+  (let [properties (second (#erl application/get_all_key :clojerl))
+        vsn        (#erl proplists/get_value :vsn properties)
+        version-string (#erl erlang/list_to_binary vsn)
         [_ major minor incremental qualifier snapshot]
         (re-matches
          #"(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9_]+))?(?:-(SNAPSHOT))?"
          version-string)
-        clojure-version {:major       (erlang/binary_to_integer.e major)
-                         :minor       (erlang/binary_to_integer.e minor)
-                         :incremental (erlang/binary_to_integer.e incremental)
+        clojure-version {:major       (#erl erlang/binary_to_integer major)
+                         :minor       (#erl erlang/binary_to_integer minor)
+                         :incremental (#erl erlang/binary_to_integer incremental)
                          :qualifier   (if (= qualifier "SNAPSHOT") nil qualifier)}]
-    (if (clojerl.String/contains.e version-string "SNAPSHOT")
+    (if (#erl clojerl.String/contains version-string "SNAPSHOT")
       (assoc clojure-version :interim true)
       clojure-version)))
 
@@ -6447,9 +6447,9 @@
   (let [bs-str   (pr-str bindings)
         expr-str (pr-str expr)]
     `(let ~bindings
-       (let [start#   (erlang/monotonic_time.e :nano_seconds)
+       (let [start#   (#erl erlang/monotonic_time :nano_seconds)
              ret#     (dotimes [_# ~iterations] ~expr)
-             end#     (erlang/monotonic_time.e :nano_seconds)
+             end#     (#erl erlang/monotonic_time :nano_seconds)
              elapsed# (/ (- end# start#) 1000000)]
          (~print-fn (str ~bs-str ", " ~expr-str ", "
                       ~iterations " runs, " elapsed# " msecs"))))))

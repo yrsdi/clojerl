@@ -7,7 +7,7 @@
                (subs path (count root))
                path)
         ns-name (-> path
-                    filename/rootname.e
+                    filename/rootname
                     (str/replace #"/" ".")
                     (str/replace #"_" "-"))
         ns-symbol (symbol ns-name)]

@@ -23,10 +23,10 @@
   (^{:tag clojerl.String, :added "1.2"} as-url [x] "Coerce argument to a URL."))
 
 (defn- url-encode [uri]
-  (http_uri/encode.e (erlang/binary_to_list.e uri)))
+  (http_uri/encode (erlang/binary_to_list uri)))
 
 (defn- url-decode [encoded-uri]
-  (http_uri/decode.e (erlang/binary_to_list.e encoded-uri)))
+  (http_uri/decode (erlang/binary_to_list encoded-uri)))
 
 (defn- escaped-utf8-urlstring->str [s]
   (-> (clojure.string/replace s "+" (url-encode "+"))
@@ -38,19 +38,19 @@
   (as-url [_] nil)
 
   clojerl.String
-  (as-file [s] (erlang.io.File/open.e s))
+  (as-file [s] (erlang.io.File/open s))
   (as-url [s] s)
 
   erlang.io.File
   (as-file [f] f)
-  (as-url [f] (erlang.io.File/path.e f))
+  (as-url [f] (erlang.io.File/path f))
 
   #_ (URL
        (as-url [u] u)
        (as-file [u]
                 (if (re-find #"file://" u)
                   (as-file (escaped-utf8-urlstring->str
-                            (clojure.string/replace u \/ (erlang.io.File/separator_char.e))))
+                            (clojure.string/replace u \/ (erlang.io.File/separator_char))))
                   (throw (str "Not a file: " u))))))
 
 (defprotocol ^{:added "1.2"} IOFactory
@@ -117,10 +117,10 @@
         (if (= "latin1" (:encoding opts)) :latin1 :utf8)])
 
 (defn file-open [path modes]
-  (erlang.io.File/open.e path (clj_core/to_list.1 modes)))
+  (erlang.io.File/open path (clj_core/to_list.1 modes)))
 
 (defn file-path [file]
-  (erlang.io.File/path.e file))
+  (erlang.io.File/path file))
 
 (extend-type clojerl.String
   IOFactory
@@ -159,10 +159,10 @@
 (defmethod do-copy [erlang.io.File erlang.io.StringWriter]
   [input output opts]
   (loop []
-    (let [line (erlang.io.File/read_line.e input)]
-      ;; (erlang/display.e line)
+    (let [line (erlang.io.File/read_line input)]
+      ;; (erlang/display line)
       (when (not= line :eof)
-        (do (erlang.io.StringWriter/write.e output line)
+        (do (erlang.io.StringWriter/write output line)
             (recur))))))
 
 (defn copy
@@ -188,8 +188,8 @@
   {:added "1.2"}
   [x]
   (let [f (as-file x)
-        path (erlang.io.File/path.e f)]
-    (if (= :absolute (filename/pathtype.e path))
+        path (erlang.io.File/path f)]
+    (if (= :absolute (filename/pathtype path))
       (throw (str f " is not a relative path"))
       path)))
 
@@ -215,7 +215,7 @@
   "Delete file f. Raise an exception if it fails unless silently is true."
   {:added "1.2"}
   [f & [silently]]
-  (or (erlang.io.File/delete.e (as-file f))
+  (or (erlang.io.File/delete (as-file f))
       silently
       (throw (str "Couldn't delete " f))))
 
