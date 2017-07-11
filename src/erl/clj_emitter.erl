@@ -101,7 +101,7 @@ ast(#{op := def} = Expr, State) ->
   {ValAst, State1} =
     case InitExpr of
       #{op := fn} = FnExpr ->
-        { VarAst
+        { var_val_function(VarAst, VarAst, VarAnn)
         , add_functions(Module, Name, VarAnn, FnExpr, State)
         };
       _ ->
